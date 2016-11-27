@@ -1,20 +1,22 @@
 package io.cde.oauth2.api.client.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Created by liaofangcai on 11/21/16.
  * 请求token的entity.
  */
 public class AccessTokenRequest {
 
-    private String client_id;
+    private String clientId;
 
-    private String client_secret;
+    private String clientSecret;
 
     private String code;
 
     public AccessTokenRequest(final String clientId, final String clientSecret, final String code) {
-        this.client_id = clientId;
-        this.client_secret = clientSecret;
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
         this.code = code;
     }
 
@@ -22,15 +24,13 @@ public class AccessTokenRequest {
         return code;
     }
 
-    public void setCode(final String code) {
-        this.code = code;
+    @JsonProperty("client_id")
+    public String getClientId() {
+        return clientId;
     }
 
-    public String getClient_id() {
-        return client_id;
-    }
-
-    public String getClient_secret() {
-        return client_secret;
+    @JsonProperty("client_secret")
+    public String getClientSecret() {
+        return clientSecret;
     }
 }

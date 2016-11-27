@@ -4,6 +4,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import io.cde.oauth2.api.client.config.RequestBuild;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -15,7 +18,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import io.cde.oauth2.api.client.domain.AccessTokenRequest;
-import io.cde.oauth2.api.client.lang.ApiException;
 
 /**
  * Created by liaofangcai on 11/21/16.
@@ -24,36 +26,42 @@ import io.cde.oauth2.api.client.lang.ApiException;
 @Service
 public class AccessTokenService {
 
-    private final ParameterizedTypeReference<Map<String, String>> typeReference = new ParameterizedTypeReference<Map<String, String>>() { };
+    private static final Logger logger = LoggerFactory.getLogger(AccessTokenService.class);
+
+    private static final ParameterizedTypeReference<Map<String, Object>> typeReference = new ParameterizedTypeReference<Map<String, Object>>() { };
 
     private RestTemplate restTemplate = new RestTemplate();
+
+    /**
+     * 获取请求code的url的参数列表.
+     */
+    @Autowired
+    private RequestBuild requestBuild;
+
     /**
      * 请求token的服务器url.
      */
-    @Value("${oauth2.api.client.requestAccessTokenUrl}")
+    @Value("${io.cde.oauth2.api.client.requestAccessTokenUrl}")
     private String requestAccessTokenUrl;
+
     /**
-     * 根据code请求token的entity.
-     */
-    @Autowired
-    private AccessTokenRequest accessTokenRequest;
-    /**
+     *
      * 根据accessTokenRequest参数entity，跟服务器交换获取token.
      * @param code 请求授权返回的code参数.
-     * @return 返回token.
+     * @return 返回token
+     * @throws RestClientException this RestClientException
+     * @throws URISyntaxException this URISyntaxException
      */
-    public String getAccessTokenByCode(final String code) throws URISyntaxException {
-        accessTokenRequest.setCode(code);
-        final RequestEntity<AccessTokenRequest> requestEntity = new RequestEntity<>(accessTokenRequest, HttpMethod.POST, new URI(requestAccessTokenUrl));
-        try {
-            final ResponseEntity<Map<String, String>> responseEntity = restTemplate.exchange(requestEntity, typeReference);
-            final Map<String, String> responseBody = responseEntity.getBody();
-            if (responseEntity.getStatusCode().is4xxClientError() || responseEntity.getStatusCode().is5xxServerError() || responseBody.containsKey("error")) {
-                throw new ApiException(responseEntity);
-            }
-            return responseBody.get("access_token");
-        } catch (RestClientException restClientException) {
-            throw restClientException;
+    public String getAccessTokenByCode(final String code) throws RestClientException, URISyntaxException {
+        final AccessTokenRequest accessTokenRequest = this.requestBuild.getAccessTokenRequest(code);
+        final RequestEntity<AccessTokenRequest> requestEntity = new RequestEntity<>(accessTokenRequest, HttpMethod.POST, new URI(this.requestAccessTokenUrl));
+        final ResponseEntity<Map<String, Object>> responseEntity = this.restTemplate.exchange(requestEntity, typeReference);
+        final Map<String, Object> responseBody = responseEntity.getBody();
+        if (responseEntity.getStatusCode().is4xxClientError() || responseEntity.getStatusCode().is5xxServerError() || responseBody.containsKey("error")) {
+            logger.error("API response entity is wrong about code");
+            return null;
         }
+        final String accessToken = responseBody.get("access_token").toString();
+        return accessToken;
     }
 }
