@@ -4,7 +4,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-import io.cde.oauth2.api.client.config.RequestBuild;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import io.cde.oauth2.api.client.build.RequestBuild;
 import io.cde.oauth2.api.client.domain.AccessTokenRequest;
 
 /**

@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import io.cde.oauth2.api.client.config.RequestBuild;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import io.cde.oauth2.api.client.build.RequestBuild;
 
 /**
  * Created by liaofangcai.
