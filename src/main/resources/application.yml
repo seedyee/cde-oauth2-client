@@ -1,17 +1,16 @@
-logging:
-  level: debug
-
 server:
   error:
     include-stacktrace: always
 
-oauth2:
-  api:
-    client:
-      scope: user:email
-      requestAuthorizeUrl: https://github.com/login/oauth/authorize
-      requestAccessTokenUrl: https://github.com/login/oauth/access_token
-      requestUserInfoUrl: https://api.github.com/user/emails
-      clientId: 4a720c2e230741984499
-      clientSecret: 0bb36c527f43de952b01551ebf490b296d4c6831
-      redirectUrl: http://localhost:8080/callback
+io:
+  cde:
+    oauth2:
+      api:
+        client:
+          scope: user:email
+          requestAuthorizeUrl: https://github.com/login/oauth/authorize
+          requestAccessTokenUrl: https://github.com/login/oauth/access_token
+          requestUserUrl: https://api.github.com/user/emails
+          clientId: 4a720c2e230741984499
+          clientSecret: 0bb36c527f43de952b01551ebf490b296d4c6831
+          redirectUrl: http://localhost:8080/callback
