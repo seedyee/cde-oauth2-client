@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import io.cde.oauth2.api.client.build.RequestBuild;
+import io.cde.oauth2.api.client.build.RequestBuilder;
+import io.cde.oauth2.api.client.domain.AuthorizationCodeRequest;
+
 
 /**
  * Created by liaofangcai.
@@ -29,7 +31,7 @@ public class AuthenticationServlet extends HttpServlet {
      * 获取请求code的url的参数列表.
      */
     @Autowired
-    private RequestBuild requestBuild;
+    private RequestBuilder requestBuilder;
 
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) {
@@ -39,7 +41,13 @@ public class AuthenticationServlet extends HttpServlet {
     @Override
     protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) {
         logger.info("authentication start");
-        final UriComponentsBuilder uriComponentsBuilder = requestBuild.getCodeRequestUrlBuild();
+        final AuthorizationCodeRequest authorizationCodeRequest = requestBuilder.getCodeRequestUrl();
+        final UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(authorizationCodeRequest.getRequestAuthorizeUrl());
+        uriComponentsBuilder.queryParam("client_id", authorizationCodeRequest.getClientId());
+        uriComponentsBuilder.queryParam("scope", authorizationCodeRequest.getScope());
+        uriComponentsBuilder.queryParam("redirect_uri", authorizationCodeRequest.getRedirectUrl());
+        uriComponentsBuilder.queryParam("state", authorizationCodeRequest.getState());
+        uriComponentsBuilder.queryParam("response_type", authorizationCodeRequest.getResponseType());
         try {
             resp.sendRedirect(uriComponentsBuilder.toUriString());
         } catch (IOException e) {

@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 
-import io.cde.oauth2.api.client.service.AccessTokenService;
-import io.cde.oauth2.api.client.service.UserService;
+import io.cde.oauth2.api.client.service.AccessTokenRequestService;
+import io.cde.oauth2.api.client.service.UserInfoRequestService;
 
 /**
  * Created by liaofangcai on 11/21/16.
@@ -31,13 +31,13 @@ public class OAuthController {
      * 获取token的service.
      */
     @Autowired
-    private AccessTokenService accessTokenService;
+    private AccessTokenRequestService accessTokenRequestService;
 
     /**
      * 根据token获取用户数据的service.
      */
     @Autowired
-    private UserService userService;
+    private UserInfoRequestService userInfoRequestService;
 
     /**
      * 获取code之后的回调，根据token获取用户信息.
@@ -50,12 +50,12 @@ public class OAuthController {
         final String accessToken;
         List<Object> list = new ArrayList<Object>();
         try {
-            accessToken = this.accessTokenService.getAccessTokenByCode(code);
+            accessToken = this.accessTokenRequestService.getAccessTokenByCode(code);
             if (accessToken == null) {
-                logger.error(" The parameters of the request are inconsistent about state");
+                logger.error("The parameters of the request are inconsistent about state");
                 return list;
             }
-            list = this.userService.getUserByAccessToken(accessToken);
+            list = this.userInfoRequestService.getUserByAccessToken(accessToken);
         } catch (URISyntaxException | RestClientException e) {
             logger.error("Request error about token", e);
         }
