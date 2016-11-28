@@ -1,11 +1,12 @@
 package io.cde.oauth2.api.client.build;
 
-import io.cde.oauth2.api.client.domain.AccessTokenRequest;
+import java.security.SecureRandom;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.security.SecureRandom;
+import io.cde.oauth2.api.client.domain.AccessTokenRequest;
 
 /**
  * Created by liaofangcai.
