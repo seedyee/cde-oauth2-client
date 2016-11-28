@@ -14,10 +14,13 @@ public class AccessTokenRequest {
 
     private String code;
 
-    public AccessTokenRequest(final String clientId, final String clientSecret, final String code) {
+    private String grantType;
+
+    public AccessTokenRequest(final String clientId, final String clientSecret, final String code, final String grantType) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.code = code;
+        this.grantType = grantType;
     }
 
     public String getCode() {
@@ -32,5 +35,10 @@ public class AccessTokenRequest {
     @JsonProperty("client_secret")
     public String getClientSecret() {
         return clientSecret;
+    }
+
+    @JsonProperty("grant_type")
+    public String getGrantType() {
+        return grantType;
     }
 }

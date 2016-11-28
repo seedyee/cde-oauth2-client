@@ -8,6 +8,8 @@ io:
       api:
         client:
           scope: user:email
+          responseType: code
+          grantType: authorization_code
           requestAuthorizeUrl: https://github.com/login/oauth/authorize
           requestAccessTokenUrl: https://github.com/login/oauth/access_token
           requestUserUrl: https://api.github.com/user/emails
