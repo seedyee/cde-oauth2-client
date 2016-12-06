@@ -4,16 +4,19 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.cde.oauth2.client.service.UserInfoRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 
 import io.cde.oauth2.client.service.AccessTokenRequestService;
+import io.cde.oauth2.client.service.AuthorizationCodeRequestService;
+import io.cde.oauth2.client.service.UserInfoRequestService;
+
 
 /**
  * Created by liaofangcai on 11/21/16.
@@ -40,6 +43,23 @@ public class OAuthController {
     private UserInfoRequestService userInfoRequestService;
 
     /**
+     * 组装请求code的url的service.
+     */
+    @Autowired
+    private AuthorizationCodeRequestService authorizationCodeRequestService;
+
+    /**
+     * 获取请求code的url.
+     * @return url
+     */
+    @RequestMapping(value = "/authentication", method = RequestMethod.GET)
+    private String getAuthenticationUrl() {
+        final String url = this.authorizationCodeRequestService.getRequestCodeUrl();
+        logger.info ("request authentication url: ", url);
+        return url;
+    }
+
+    /**
      * 获取code之后的回调，根据token获取用户信息.
      * @param code this code
      * @param state this state
@@ -55,7 +75,7 @@ public class OAuthController {
                 logger.error("The parameters of the request are inconsistent about state");
                 return list;
             }
-            list = this.userInfoRequestService.getUserByAccessToken(accessToken);
+            list = this.userInfoRequestService.getUserWithAccessToken(accessToken);
         } catch (URISyntaxException | RestClientException e) {
             logger.error("Request error about token", e);
         }
