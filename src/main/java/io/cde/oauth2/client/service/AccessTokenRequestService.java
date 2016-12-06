@@ -4,7 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-import io.cde.oauth2.client.domain.AccessTokenRequest;
+import io.cde.oauth2.client.domain.AccessTokenRequestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +15,9 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
-import io.cde.oauth2.client.build.RequestBuilder;
+import io.cde.oauth2.client.agent.RequestAgent;
+import io.cde.oauth2.client.builder.RequestInfoBuilder;
 
 /**
  * Created by liaofangcai on 11/21/16.
@@ -30,13 +30,17 @@ public class AccessTokenRequestService {
 
     private static final ParameterizedTypeReference<Map<String, Object>> typeReference = new ParameterizedTypeReference<Map<String, Object>>() { };
 
-    private RestTemplate restTemplate = new RestTemplate();
-
     /**
-     * 获取请求code的url的参数列表.
+     * 获取请求第三方api而封装的agent.
      */
     @Autowired
-    private RequestBuilder requestBuilder;
+    private RequestAgent agent;
+
+    /**
+     * 获取请求参数对象的build.
+     */
+    @Autowired
+    private RequestInfoBuilder requestInfoBuilder;
 
     /**
      * 请求token的服务器url.
@@ -53,9 +57,10 @@ public class AccessTokenRequestService {
      * @throws URISyntaxException this URISyntaxException
      */
     public String getAccessTokenByCode(final String code) throws RestClientException, URISyntaxException {
-        final AccessTokenRequest accessTokenRequest = this.requestBuilder.getAccessTokenRequest(code);
-        final RequestEntity<AccessTokenRequest> requestEntity = new RequestEntity<>(accessTokenRequest, HttpMethod.POST, new URI(this.requestAccessTokenUrl));
-        final ResponseEntity<Map<String, Object>> responseEntity = this.restTemplate.exchange(requestEntity, typeReference);
+        final AccessTokenRequestInfo accessTokenRequestInfo = this.requestInfoBuilder.buildAccessTokenRequestInfo (code);
+        final RequestEntity<AccessTokenRequestInfo> requestEntity = new RequestEntity<>(accessTokenRequestInfo, HttpMethod.POST, new URI(this.requestAccessTokenUrl));
+
+        final ResponseEntity<Map<String, Object>> responseEntity = this.agent.getAccessToken(requestEntity, typeReference);
         final Map<String, Object> responseBody = responseEntity.getBody();
         if (responseEntity.getStatusCode().is4xxClientError() || responseEntity.getStatusCode().is5xxServerError() || responseBody.containsKey("error")) {
             logger.error("API response entity is wrong about code");
