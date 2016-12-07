@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 
-import io.cde.oauth2.client.service.AccessTokenRequestService;
-import io.cde.oauth2.client.service.AuthorizationCodeRequestService;
-import io.cde.oauth2.client.service.UserInfoRequestService;
-
+import io.cde.oauth2.client.service.OAuthService;
 
 /**
  * Created by liaofangcai on 11/21/16.
@@ -34,19 +31,7 @@ public class OAuthController {
      * 获取token的service.
      */
     @Autowired
-    private AccessTokenRequestService accessTokenRequestService;
-
-    /**
-     * 根据token获取用户数据的service.
-     */
-    @Autowired
-    private UserInfoRequestService userInfoRequestService;
-
-    /**
-     * 组装请求code的url的service.
-     */
-    @Autowired
-    private AuthorizationCodeRequestService authorizationCodeRequestService;
+    private OAuthService service;
 
     /**
      * 获取请求code的url.
@@ -54,8 +39,8 @@ public class OAuthController {
      */
     @RequestMapping(value = "/authentication", method = RequestMethod.GET)
     private String getAuthenticationUrl() {
-        final String url = this.authorizationCodeRequestService.getRequestCodeUrl();
-        logger.info ("request authentication url: ", url);
+        final String url = this.service.getRequestCodeUrl();
+        logger.info("request authentication url:", url);
         return url;
     }
 
@@ -70,12 +55,12 @@ public class OAuthController {
         final String accessToken;
         List<Object> list = new ArrayList<Object>();
         try {
-            accessToken = this.accessTokenRequestService.getAccessTokenByCode(code);
+            accessToken = this.service.getAccessTokenByCode(code);
             if (accessToken == null) {
                 logger.error("The parameters of the request are inconsistent about state");
                 return list;
             }
-            list = this.userInfoRequestService.getUserWithAccessToken(accessToken);
+            list = this.service.getUserWithAccessToken(accessToken);
         } catch (URISyntaxException | RestClientException e) {
             logger.error("Request error about token", e);
         }
