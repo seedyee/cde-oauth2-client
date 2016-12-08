@@ -16,10 +16,26 @@ import org.springframework.stereotype.Component;
 public class RequestInfoBuilder {
 
     /**
+     * 表示授权类型.
+     */
+    private final String responseType = "code";
+
+    /**
+     * 使用的授权模式.
+     */
+    private final String grantType = "authorization_code";
+
+    /**
      * 项目注册id.
      */
     @Value("${cde.oauth2.client.clientId}")
     private String clientId;
+
+    /**
+     * 项目注册的Client_Secret.
+     */
+    @Value("${cde.oauth2.client.clientSecret}")
+    private String clientSecret;
 
     /**
      * 请求的授权.
@@ -40,26 +56,10 @@ public class RequestInfoBuilder {
     private String requestAuthorizeUrl;
 
     /**
-     * 项目注册的Client_Secret.
-     */
-    @Value("${cde.oauth2.client.clientSecret}")
-    private String clientSecret;
-
-    /**
      * 向服务器请求资源的url.
      */
     @Value("${cde.oauth2.client.requestUserUrl}")
     private String userRequestUrl;
-
-    /**
-     * 表示授权类型.
-     */
-    private final String responseType = "code";
-
-    /**
-     * 使用的授权模式.
-     */
-    private final String grantType = "authorization_code";
 
     /**
      * 获取AccessTokenRequest.
@@ -67,7 +67,12 @@ public class RequestInfoBuilder {
      * @return this AccessTokenRequestInfo
      */
     public AccessTokenRequestInfo buildAccessTokenRequestInfo(final String code) {
-        final AccessTokenRequestInfo accessTokenRequestInfo = new AccessTokenRequestInfo (this.clientId, this.clientSecret, code, this.grantType);
+        final AccessTokenRequestInfo accessTokenRequestInfo = new AccessTokenRequestInfoBuilder()
+            .setClientId(this.clientId)
+            .setClientSecret(this.clientSecret)
+            .setCode(code)
+            .setGrantType(this.grantType)
+            .build();
         return accessTokenRequestInfo;
     }
 
@@ -77,12 +82,22 @@ public class RequestInfoBuilder {
      */
     public AuthorizationCodeRequestInfo buildAuthorizationCodeRequestInfo() {
         final long state = new SecureRandom().nextLong();
-        final AuthorizationCodeRequestInfo authorizationCodeRequestInfo = new AuthorizationCodeRequestInfo(this.clientId, this.scope, this.redirectUrl, state, this.responseType, this.requestAuthorizeUrl);
+        final AuthorizationCodeRequestInfo authorizationCodeRequestInfo = new AuthorizationCodeRequestInfoBuilder()
+                .setClientId(this.clientId)
+                .setScope(this.scope)
+                .setResponseType(this.responseType)
+                .setRedirectUrl(this.redirectUrl)
+                .setRequestAuthorizeUrl(requestAuthorizeUrl)
+                .setState(state)
+                .build();
         return authorizationCodeRequestInfo;
     }
 
     public UserRequestInfo buildUserRequestInfo(final String token) {
-        final UserRequestInfo userRequestInfo = new UserRequestInfo(token, this.userRequestUrl);
+        final UserRequestInfo userRequestInfo = new UserRequestInfoBuilder()
+                .setToken(token)
+                .setUserRequestUrl(this.userRequestUrl)
+                .build();
         return  userRequestInfo;
     }
 }
