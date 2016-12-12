@@ -66,7 +66,7 @@ public class RequestAgent {
         final ResponseEntity<Map<String, Object>> responseEntity = this.restTemplate.exchange(requestEntity, requestTokenTypeReference);
         final Map<String, Object> responseBody = responseEntity.getBody();
         if (responseEntity.getStatusCode().is4xxClientError() || responseEntity.getStatusCode().is5xxServerError() || responseBody.containsKey("error")) {
-            logger.error("API response entity is wrong about code");
+            logger.error("API response entity is wrong about request code");
             return null;
         }
         final String token = responseBody.get("access_token").toString();
