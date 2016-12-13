@@ -1,97 +1,84 @@
 package io.cde.oauth2.client.agent;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import com.github.scribejava.core.model.*;
 
 import io.cde.oauth2.client.builder.RequestInfoBuilder;
-import io.cde.oauth2.client.domain.AccessTokenRequestInfo;
-import io.cde.oauth2.client.domain.UserRequestInfo;
 
 /**
- * Created by liaofangcai on 11/21/16.
- * 根据code获取token.
+ * Created by liaofangcai.
+ * Created time 12/9/16.
  */
 @Component
 public class RequestAgent {
 
-    private static final Logger logger = LoggerFactory.getLogger(RequestAgent.class);
+    private final Logger logger = LoggerFactory.getLogger(RequestAgent.class);
 
-    private static final ParameterizedTypeReference<List<Object>> requestUserInfoTypeReference = new ParameterizedTypeReference<List<Object>>() { };
-
-    private static final ParameterizedTypeReference<Map<String, Object>> requestTokenTypeReference = new ParameterizedTypeReference<Map<String, Object>>() { };
-
-    /**
-     * 访问rest服务的客户端.
-     */
-    private RestTemplate restTemplate = new RestTemplate();
-
-    /**
-     * 获取请求参数对象的build.
-     */
     @Autowired
-    private RequestInfoBuilder requestInfoBuilder;
+    private RequestInfoBuilder builder;
 
     /**
-     * 请求token的服务器url.
+     * 向服务器请求资源的url.
      */
-    @Value("${cde.oauth2.client.requestAccessTokenUrl}")
-    private String requestAccessTokenUrl;
+    @Value("${cde.oauth2.client.requestUserUrl}")
+    private String requestUserUrl;
 
     /**
-     * 根据accessTokenRequest参数entity，跟服务器交换获取token.
-     * @param code 请求授权返回的code参数.
-     * @return return token
-     * @throws RestClientException this RestClientException
-     * @throws URISyntaxException this URISyntaxException
+     * 根据获取的code，请求token.
+     * @param code this code
+     * @return this token
+     * @throws InterruptedException this InterruptedException
+     * @throws ExecutionException this ExecutionException
      */
-    public String getAccessToken(final String code) throws RestClientException, URISyntaxException {
-        final AccessTokenRequestInfo accessTokenRequestInfo = this.requestInfoBuilder.buildAccessTokenRequestInfo(code);
-        final RequestEntity<AccessTokenRequestInfo> requestEntity = new RequestEntity<>(accessTokenRequestInfo, HttpMethod.POST, new URI(this.requestAccessTokenUrl));
-        final ResponseEntity<Map<String, Object>> responseEntity = this.restTemplate.exchange(requestEntity, requestTokenTypeReference);
-        final Map<String, Object> responseBody = responseEntity.getBody();
-        if (responseEntity.getStatusCode().is4xxClientError() || responseEntity.getStatusCode().is5xxServerError() || responseBody.containsKey("error")) {
-            logger.error("API response entity is wrong about request code");
-            return null;
-        }
-        final String token = responseBody.get("access_token").toString();
+    public OAuth2AccessToken getAccessToken(final String code) throws InterruptedException, ExecutionException {
+        final OAuth2AccessToken token;
+        token = this.builder.getOAuth20Service().getAccessTokenAsync(code, new OAuthAsyncRequestCallback<OAuth2AccessToken>() {
+            @Override
+            public void onCompleted(final OAuth2AccessToken oAuth2AccessToken) {
+                logger.info("getAccessTokenAsync OAuth2AccessToken = ", oAuth2AccessToken);
+            }
+
+            @Override
+            public void onThrowable(final Throwable throwable) {
+                logger.error("getAccessTokenAsync is error", throwable);
+            }
+        }).get();
         return token;
     }
 
     /**
      *
-     * 根据entity获取服务器资源信息(用户相关信息).
+     * 根据获取的token，请求用户基本信息.
      * @param token this token
-     * @return return list
-     * @throws URISyntaxException this URISyntaxException
+     * @return this user information
+     * @throws InterruptedException this InterruptedException
+     * @throws ExecutionException this ExecutionException
+     * @throws IOException this IOException
      */
-    public List<Object> getUserInfo(final String token) throws URISyntaxException {
-        List<Object> list = new ArrayList<Object>();
-        final HttpHeaders header = new HttpHeaders();
-        header.set("Authorization", "token " + token);
-        final UserRequestInfo userRequestInfo = this.requestInfoBuilder.buildUserRequestInfo(token);
-        final RequestEntity<String> entity = new RequestEntity<>(header, HttpMethod.GET, new URI(userRequestInfo.getRequestUserUrl()));
-        final ResponseEntity<List<Object>> responseEntity = this.restTemplate.exchange(entity, requestUserInfoTypeReference);
-        if (responseEntity.getStatusCode().is4xxClientError() || responseEntity.getStatusCode().is5xxServerError()) {
-            logger.error("API response entity is wrong about code");
-            return list;
-        }
-        list = responseEntity.getBody();
-        return list;
+    public String getUserInfo(final OAuth2AccessToken token) throws InterruptedException, ExecutionException, IOException {
+        final String userInfo;
+        final Response response;
+        final OAuthRequestAsync requestAsync = new OAuthRequestAsync(Verb.GET, requestUserUrl, this.builder.getOAuth20Service());
+        this.builder.getOAuth20Service().signRequest(token, requestAsync);
+        response = requestAsync.sendAsync(new OAuthAsyncRequestCallback<Response>() {
+            @Override
+            public void onCompleted(final Response response) {
+                logger.info("sendAsync Response.body", response);
+            }
+
+            @Override
+            public void onThrowable(final Throwable throwable) {
+                logger.error("sendAsync is error", throwable);
+            }
+        }).get();
+        userInfo = response.getBody();
+        return userInfo;
     }
 }
