@@ -19,6 +19,9 @@ import io.cde.oauth2.client.builder.RequestInfoBuilder;
 @Component
 public class RequestAgent {
 
+    /**
+     * 日志记录.
+     */
     private final Logger logger = LoggerFactory.getLogger(RequestAgent.class);
 
     @Autowired
