@@ -1,13 +1,26 @@
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 0
+    password: aline
+    pool:
+      max-active: 8
+      max-wait: 1
+      max-idle: 8
+      min-idle: 0
+  data:
+    mongodb:
+      uri: mongodb://192.168.1.13:27017/cde-account-service
 cde:
   oauth2:
     client:
-      scope: user:email
-      requestAuthorizeUrl: https://github.com/login/oauth/authorize
-      requestAccessTokenUrl: https://github.com/login/oauth/access_token
-      requestUserUrl: https://api.github.com/user/emails
+      scope: user
+      requestUserUrl: https://api.github.com/user
       clientId: 4a720c2e230741984499
       clientSecret: 0bb36c527f43de952b01551ebf490b296d4c6831
       redirectUrl: http://localhost:8080/callback
+      timeToLiveSeconds: 50
 
 server:
   port: 8080
