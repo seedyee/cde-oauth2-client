@@ -13,11 +13,13 @@
 
   <artifactId>cde-oauth2-client</artifactId>
   <version>0.1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
   <name>CDE OAuth2 Client</name>
 
   <properties>
     <scribejava.java.version>3.3.0</scribejava.java.version>
     <json.lib.version>2.4</json.lib.version>
+    <jjwt.version>0.7.0</jjwt.version>
   </properties>
 
   <dependencies>
@@ -53,6 +55,20 @@
       <artifactId>json-lib</artifactId>
       <version>${json.lib.version}</version>
     </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt</artifactId>
+      <version>${jjwt.version}</version>
+    </dependency>
   </dependencies>
+
+  <build>
+      <plugins>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+      </plugins>
+  </build>
 
 </project>
